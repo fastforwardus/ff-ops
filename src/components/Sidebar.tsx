@@ -79,29 +79,37 @@ export default function Sidebar({ role, userName }: { role: string; userName: st
         </div>
 
         <div style={{
-          display:"flex", alignItems:"center", gap:8,
-          padding:"8px 10px", borderRadius:8,
+          display:"flex", flexDirection:"column", gap:6,
+          padding:"10px", borderRadius:8,
           border:`1px solid var(--border)`, background:"var(--bg-card)",
         }}>
-          <div style={{
-            width:28, height:28, borderRadius:"50%",
-            background:"var(--bg-subtle)", flexShrink:0,
-            display:"flex", alignItems:"center", justifyContent:"center",
-            fontSize:11, fontWeight:600, color:"var(--text-second)",
-          }}>
-            {userName.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase()}
-          </div>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:12, fontWeight:500, color:"var(--text-primary)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-              {userName}
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{
+              width:28, height:28, borderRadius:"50%",
+              background:"var(--bg-subtle)", flexShrink:0,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:11, fontWeight:600, color:"var(--text-second)",
+            }}>
+              {userName.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase()}
             </div>
-            <div style={{ fontSize:11, color:"var(--text-third)", textTransform:"capitalize" }}>{role}</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:12, fontWeight:500, color:"var(--text-primary)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                {userName}
+              </div>
+              <div style={{ fontSize:11, color:"var(--text-third)", textTransform:"capitalize" }}>{role}</div>
+            </div>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            title="Cerrar sesión"
-            style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-third)", fontSize:14, padding:0 }}
-          >↩</button>
+            style={{
+              width:"100%", padding:"6px 0", borderRadius:6,
+              border:"1px solid var(--border)", background:"transparent",
+              color:"var(--text-second)", fontSize:12, cursor:"pointer",
+              fontFamily:"Inter,sans-serif",
+            }}
+          >
+            Cerrar sesión
+          </button>
         </div>
       </div>
     </div>
