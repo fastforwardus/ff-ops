@@ -2,7 +2,7 @@ import { pgTable, uuid, text, timestamp, date, boolean, integer, pgEnum } from "
 import { relations } from "drizzle-orm"
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "vendor", "ops", "client"])
-export const dunsStatusEnum = pgEnum("duns_status", ["has", "pending", "waiting"])
+export const dunsStatusEnum = pgEnum("duns_status", ["has", "pending", "waiting", "exempt"])
 export const urgencyEnum = pgEnum("urgency", ["critical", "high", "normal"])
 export const submissionStatusEnum = pgEnum("submission_status", [
   "waiting_duns", "pending_review", "under_review",
