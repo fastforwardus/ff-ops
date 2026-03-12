@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { sendClientWelcomeEmail } from "@/lib/email"
 import { db } from "@/lib/db"
 import { clients, submissions, services, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
@@ -74,6 +75,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    try { await sendClientWelcomeEmail({ toEmail: client.portalEmail ?? client.ownerEmail, companyName: client.companyName, portalUrl: `${process.env.NEXT_PUBLIC_APP_URL}/portal` }) } catch(e) { console.error("email error", e) }
     return NextResponse.json({ ok: true, clientId: client.id })
   } catch (e: any) {
     console.error("[POST /api/vendor/clients]", e.message)

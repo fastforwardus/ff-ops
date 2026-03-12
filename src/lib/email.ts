@@ -73,3 +73,29 @@ export async function sendClientMessage({
     `,
   })
 }
+
+export async function sendClientWelcomeEmail({
+  toEmail, companyName, portalUrl,
+}: {
+  toEmail: string; companyName: string; portalUrl: string
+}) {
+  await resend.emails.send({
+    from:    FROM,
+    to:      toEmail,
+    subject: `FastForward — Acceso a tu portal de trámites`,
+    html: `
+      <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;color:#111">
+        <div style="padding:32px 0 16px">
+          <span style="font-size:18px;font-weight:700;letter-spacing:-0.03em">FastForward</span>
+          <span style="color:#aaa;font-weight:300"> Ops</span>
+        </div>
+        <div style="background:#f9f9f8;border:1px solid #ebebeb;border-radius:12px;padding:24px;margin-bottom:24px">
+          <div style="font-size:20px;font-weight:600;margin-bottom:8px">Bienvenido, ${companyName}</div>
+          <div style="font-size:13px;color:#666;margin-bottom:20px">Tu trámite fue registrado en FastForward. Podés seguir el estado en tu portal:</div>
+          <a href="${portalUrl}" style="display:inline-block;padding:12px 24px;background:#111;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">Ver mi portal →</a>
+        </div>
+        <div style="font-size:11px;color:#aaa">FastForward LLC · Miami, FL</div>
+      </div>
+    `,
+  })
+}
