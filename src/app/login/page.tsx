@@ -12,18 +12,13 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError("")
-    // Dejamos que NextAuth redirija solo via callbackUrl → middleware → destino correcto
-    const res = await signIn("credentials", {
+    await signIn("credentials", {
       email,
       password,
       redirect: true,
       callbackUrl: "/",
     })
-    // Si llega acá es porque redirect:true falló
-    if (res?.error) {
-      setError("Email o contraseña incorrectos.")
-      setLoading(false)
-    }
+    setLoading(false)
   }
 
   return (
