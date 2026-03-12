@@ -1,14 +1,12 @@
 "use client"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [email,    setEmail]    = useState("")
   const [password, setPassword] = useState("")
   const [error,    setError]    = useState("")
   const [loading,  setLoading]  = useState(false)
-  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -23,19 +21,17 @@ export default function LoginPage() {
       return
     }
 
-    // Esperar que la cookie esté lista
-    await new Promise(r => setTimeout(r, 800))
-
+    await new Promise(r => setTimeout(r, 500))
     const session = await fetch("/api/auth/session").then(r => r.json())
     const role          = session?.user?.role
     const needsPwChange = session?.user?.needsPwChange
 
-    if (needsPwChange) { router.push("/change-password"); return }
-    if (role === "admin")  { router.push("/admin/dashboard"); return }
-    if (role === "vendor") { router.push("/vendor/dashboard"); return }
-    if (role === "ops")    { router.push("/ops/queue"); return }
-    if (role === "client") { router.push("/portal"); return }
-    router.push("/")
+    if (needsPwChange)         { window.location.href = "/change-password"; return }
+    if (role === "admin")      { window.location.href = "/admin/dashboard"; return }
+    if (role === "vendor")     { window.location.href = "/vendor/dashboard"; return }
+    if (role === "ops")        { window.location.href = "/ops/queue"; return }
+    if (role === "client")     { window.location.href = "/portal"; return }
+    window.location.href = "/"
   }
 
   return (
