@@ -12,12 +12,21 @@ export async function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl
 
+  // Rutas públicas
+  if (pathname.startsWith("/api/auth") || pathname === "/change-password") return NextResponse.next()
+
   if (!token) {
     if (pathname === "/login") return NextResponse.next()
     return NextResponse.redirect(new URL("/login", req.url))
   }
 
-  const role = (token as any).role
+  const role      = (token as any).role
+  const needsPwChange = (token as any).needsPwChange
+
+  // Si tiene contraseña temporal → forzar cambio
+  if (needsPwChange && pathname !== "/change-password") {
+    return NextResponse.redirect(new URL("/change-password", req.url))
+  }
 
   if (pathname === "/login") {
     if (role === "admin")  return NextResponse.redirect(new URL("/admin/dashboard", req.url))
@@ -28,14 +37,10 @@ export async function middleware(req: NextRequest) {
 
   if (pathname.startsWith("/admin") && role !== "admin")
     return NextResponse.redirect(new URL("/login", req.url))
-
-  // vendor Y ops pueden entrar a rutas de vendor
   if (pathname.startsWith("/vendor") && !["admin","vendor","ops"].includes(role))
     return NextResponse.redirect(new URL("/login", req.url))
-
   if (pathname.startsWith("/ops") && !["admin","ops"].includes(role))
     return NextResponse.redirect(new URL("/login", req.url))
-
   if (pathname.startsWith("/portal") && role !== "client")
     return NextResponse.redirect(new URL("/login", req.url))
 
@@ -43,5 +48,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/login", "/admin/:path*", "/vendor/:path*", "/ops/:path*", "/portal/:path*"],
+  matcher: ["/", "/login", "/change-password", "/admin/:path*", "/vendor/:path*", "/ops/:path*", "/portal/:path*"],
 }
