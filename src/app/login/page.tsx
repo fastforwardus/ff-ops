@@ -23,7 +23,9 @@ export default function LoginPage() {
       return
     }
 
-    // Leer sesión para saber a dónde ir
+    // Esperar que la cookie esté lista
+    await new Promise(r => setTimeout(r, 800))
+
     const session = await fetch("/api/auth/session").then(r => r.json())
     const role          = session?.user?.role
     const needsPwChange = session?.user?.needsPwChange
