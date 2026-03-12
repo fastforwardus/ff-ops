@@ -2,15 +2,27 @@ import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { submissions, clients, services } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
-import { auth } from "@/lib/auth"
+import { jwtVerify } from "jose"
+import { cookies } from "next/headers"
+
+const secret = new TextEncoder().encode(process.env.AUTH_SECRET)
+
+async function getClientFromToken() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("portal_token")?.value
+  if (!token) return null
+  try {
+    const { payload } = await jwtVerify(token, secret)
+    return payload as { clientId: string; email: string }
+  } catch { return null }
+}
 
 export async function GET() {
-  const session = await auth()
-  if (!session) return NextResponse.json(null, { status: 401 })
-  const clientEmail = session.user?.email
+  const payload = await getClientFromToken()
+  if (!payload) return NextResponse.json(null, { status: 401 })
 
-  const [client] = await db.select().from(clients).where(eq(clients.portalEmail, clientEmail!))
-  if (!client) return NextResponse.json(null)
+  const [client] = await db.select().from(clients).where(eq(clients.id, payload.clientId))
+  if (!client) return NextResponse.json(null, { status: 401 })
 
   const rows = await db
     .select({
@@ -29,7 +41,6 @@ export async function GET() {
     .innerJoin(services, eq(submissions.serviceId, services.id))
     .innerJoin(clients,  eq(submissions.clientId,  clients.id))
     .where(eq(submissions.clientId, client.id))
-    .limit(1)
 
   return NextResponse.json(rows[0] ?? null)
 }

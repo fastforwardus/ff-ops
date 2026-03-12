@@ -90,7 +90,7 @@ export default function PortalPage() {
 
   useEffect(() => {
     fetch("/api/portal/submission")
-      .then(r => r.json())
+      .then(r => { if (r.status === 401) { window.location.href = "/portal/login"; return Promise.reject() }; return r.json() })
       .then(data => { setSub(data); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
@@ -131,7 +131,7 @@ export default function PortalPage() {
               }}>{l.toUpperCase()}</button>
             ))}
           </div>
-          <a href="/api/auth/signout" style={{ fontSize: 12, color: "var(--text-third)", textDecoration: "none" }}>
+          <a href="/api/portal/logout" style={{ fontSize: 12, color: "var(--text-third)", textDecoration: "none" }}>
             {t.logout} ↩
           </a>
         </div>
