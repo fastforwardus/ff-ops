@@ -1,30 +1,29 @@
 "use client"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [email,    setEmail]    = useState("")
   const [password, setPassword] = useState("")
   const [error,    setError]    = useState("")
   const [loading,  setLoading]  = useState(false)
-  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError("")
-    const res = await signIn("credentials", { email, password, redirect: false })
-    setLoading(false)
-    if (res?.error) { setError("Email o contraseña incorrectos."); return }
-    // Get session to redirect by role
-    const session = await fetch("/api/auth/session").then(r => r.json())
-    const role = session?.user?.role
-    if (role === "client")  router.push("/portal")
-    else if (role === "admin")  router.push("/admin/dashboard")
-    else if (role === "vendor") router.push("/vendor/dashboard")
-    else if (role === "ops")    router.push("/ops/queue")
-    else router.push("/admin/dashboard")
+    // Dejamos que NextAuth redirija solo via callbackUrl → middleware → destino correcto
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: true,
+      callbackUrl: "/",
+    })
+    // Si llega acá es porque redirect:true falló
+    if (res?.error) {
+      setError("Email o contraseña incorrectos.")
+      setLoading(false)
+    }
   }
 
   return (
@@ -33,9 +32,7 @@ export default function LoginPage() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; }
-        .wrap {
-          min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: #0e0e0e;
-        }
+        .wrap { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: #0e0e0e; }
         @media (max-width: 700px) { .wrap { grid-template-columns: 1fr; } .left { display: none !important; } }
         .left { display: flex; flex-direction: column; justify-content: space-between; padding: 48px; background: linear-gradient(135deg, #1a1a1a 0%, #0e0e0e 100%); border-right: 1px solid #222; }
         .right { display: flex; align-items: center; justify-content: center; padding: 48px 40px; background: #fafaf9; }
@@ -48,7 +45,7 @@ export default function LoginPage() {
         .field input:focus { border-color: #111; }
         .field input::placeholder { color: #ccc; }
         .err { background: #fff5f5; border: 1px solid #fdd; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #c00; margin-bottom: 16px; }
-        .submit-btn { width: 100%; height: 42px; font-size: 14px; font-weight: 600; border-radius: 10px; border: none; background: #111; color: #fff; cursor: pointer; transition: opacity 0.15s; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
+        .submit-btn { width: 100%; height: 42px; font-size: 14px; font-weight: 600; border-radius: 10px; border: none; background: #111; color: #fff; cursor: pointer; transition: opacity 0.15s; font-family: 'Inter', sans-serif; }
         .submit-btn:hover { opacity: 0.85; }
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .footer { margin-top: 28px; font-size: 11px; color: #ccc; text-align: center; }
