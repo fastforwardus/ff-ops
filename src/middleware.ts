@@ -28,10 +28,14 @@ export async function middleware(req: NextRequest) {
 
   if (pathname.startsWith("/admin") && role !== "admin")
     return NextResponse.redirect(new URL("/login", req.url))
-  if (pathname.startsWith("/vendor") && !["admin","vendor"].includes(role))
+
+  // vendor Y ops pueden entrar a rutas de vendor
+  if (pathname.startsWith("/vendor") && !["admin","vendor","ops"].includes(role))
     return NextResponse.redirect(new URL("/login", req.url))
+
   if (pathname.startsWith("/ops") && !["admin","ops"].includes(role))
     return NextResponse.redirect(new URL("/login", req.url))
+
   if (pathname.startsWith("/portal") && role !== "client")
     return NextResponse.redirect(new URL("/login", req.url))
 

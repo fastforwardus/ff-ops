@@ -21,7 +21,8 @@ const NAV: Record<string, NavItem[]> = {
   ],
   ops: [
     { label: "Cola de trabajo", href: "/ops/queue" },
-    { label: "Clientes",        href: "/ops/clients" },
+    { label: "Mis clientes",    href: "/vendor/clients" },
+    { label: "Nuevo cliente",   href: "/vendor/clients/new" },
   ],
 }
 
@@ -63,10 +64,7 @@ export default function Sidebar({ role, userName }: { role: string; userName: st
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {/* Notificaciones */}
         <NotificationBell />
-
-        {/* Theme toggle */}
         <div style={{
           display: "flex", background: "var(--bg-subtle)",
           borderRadius: 8, padding: 3, gap: 2,
@@ -85,8 +83,6 @@ export default function Sidebar({ role, userName }: { role: string; userName: st
             </button>
           ))}
         </div>
-
-        {/* User */}
         <div style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "8px 10px", borderRadius: 8,
