@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { sendClientWelcomeEmail } from "@/lib/email"
 import { db } from "@/lib/db"
 import { clients, submissions, services, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { auth } from "@/lib/auth"
+import { sendClientWelcomeEmail } from "@/lib/email"
+import { createHash, randomBytes } from "crypto"
 
 async function getUser() {
   const session = await auth()
@@ -50,10 +51,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { selectedServices, ...clientData } = body
 
+    // Generar contraseña temporal para el portal
+    const tempPassword = randomBytes(4).toString("hex").toUpperCase() + "!" + randomBytes(2).toString("hex")
+    const portalPasswordHash = "$seed$" + createHash("sha256").update(tempPassword).digest("hex")
+
     const [client] = await db.insert(clients).values({
       vendorId:           user.id,
       portalEmail:        clientData.ownerEmail,
-      portalPasswordHash: "pending",
+      portalPasswordHash,
       companyName:        clientData.companyName   ?? "",
       country:            clientData.country        ?? "",
       address:            clientData.address        ?? "",
@@ -75,7 +80,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    try { await sendClientWelcomeEmail({ toEmail: client.portalEmail ?? client.ownerEmail, companyName: client.companyName, portalUrl: `${process.env.NEXT_PUBLIC_APP_URL}/portal` }) } catch(e) { console.error("email error", e) }
+    // Enviar email con credenciales
+    try {
+      await sendClientWelcomeEmail({
+        toEmail:     client.portalEmail ?? client.ownerEmail,
+        companyName: client.companyName,
+        portalUrl:   `${process.env.NEXT_PUBLIC_APP_URL}/portal`,
+        email:       client.portalEmail ?? client.ownerEmail,
+        tempPassword,
+      })
+    } catch(e) {
+      console.error("email error", e)
+    }
+
     return NextResponse.json({ ok: true, clientId: client.id })
   } catch (e: any) {
     console.error("[POST /api/vendor/clients]", e.message)

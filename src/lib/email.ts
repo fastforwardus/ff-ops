@@ -75,9 +75,9 @@ export async function sendClientMessage({
 }
 
 export async function sendClientWelcomeEmail({
-  toEmail, companyName, portalUrl,
+  toEmail, companyName, portalUrl, email, tempPassword,
 }: {
-  toEmail: string; companyName: string; portalUrl: string
+  toEmail: string; companyName: string; portalUrl: string; email: string; tempPassword: string
 }) {
   await resend.emails.send({
     from:    FROM,
@@ -91,10 +91,14 @@ export async function sendClientWelcomeEmail({
         </div>
         <div style="background:#f9f9f8;border:1px solid #ebebeb;border-radius:12px;padding:24px;margin-bottom:24px">
           <div style="font-size:20px;font-weight:600;margin-bottom:8px">Bienvenido, ${companyName}</div>
-          <div style="font-size:13px;color:#666;margin-bottom:20px">Tu trámite fue registrado en FastForward. Podés seguir el estado en tu portal:</div>
-          <a href="${portalUrl}" style="display:inline-block;padding:12px 24px;background:#111;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">Ver mi portal →</a>
+          <div style="font-size:13px;color:#666;margin-bottom:20px">Tu trámite fue registrado en FastForward. Usá estas credenciales para acceder a tu portal:</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
+            <tr><td style="color:#888;padding:6px 0;width:120px">Email</td><td style="font-weight:600">${email}</td></tr>
+            <tr><td style="color:#888;padding:6px 0">Contraseña</td><td style="font-weight:600;font-family:monospace;font-size:15px">${tempPassword}</td></tr>
+          </table>
+          <a href="${portalUrl}" style="display:inline-block;padding:12px 24px;background:#111;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">Entrar al portal →</a>
         </div>
-        <div style="font-size:11px;color:#aaa">FastForward LLC · Miami, FL</div>
+        <div style="font-size:11px;color:#aaa">FastForward LLC · Miami, FL — Este email contiene información confidencial.</div>
       </div>
     `,
   })
