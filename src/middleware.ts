@@ -13,6 +13,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   if (pathname.startsWith("/api/auth") || pathname === "/change-password") return NextResponse.next()
+  if (pathname.startsWith("/portal") || pathname.startsWith("/api/portal")) return NextResponse.next()
 
   if (!token) {
     if (pathname === "/login") return NextResponse.next()
@@ -39,8 +40,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url))
   if (pathname.startsWith("/ops") && !["admin","ops"].includes(role))
     return NextResponse.redirect(new URL("/login", req.url))
-  if (pathname.startsWith("/portal") && role !== "client")
-    return NextResponse.redirect(new URL("/login", req.url))
+
 
   return NextResponse.next()
 }
