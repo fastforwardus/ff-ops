@@ -8,25 +8,19 @@ export async function GET() {
   const session = await auth()
   const role = (session?.user as any)?.role
   const myId = (session?.user as any)?.id
-  if (!session || !["admin","vendor"].includes(role))
+  if (!session || !["admin","vendor","ops"].includes(role))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const myClients = await db.select().from(clients)
-    .where(role === "admin" ? undefined as any : eq(clients.vendorId, myId))
-    .orderBy(clients.createdAt)
+  const myClients = role === "admin"
+    ? await db.select().from(clients).orderBy(clients.createdAt)
+    : await db.select().from(clients).where(eq(clients.vendorId, myId)).orderBy(clients.createdAt)
 
   const allUsers = await db.select({ id: users.id, name: users.name }).from(users)
   const userMap  = Object.fromEntries(allUsers.map(u => [u.id, u.name]))
 
   const result = await Promise.all(myClients.map(async client => {
     const subs = await db
-      .select({
-        id:           submissions.id,
-        status:       submissions.status,
-        urgency:      submissions.urgency,
-        assignedToId: submissions.assignedToId,
-        serviceLabel: services.labelEs,
-      })
+      .select({ id:submissions.id, status:submissions.status, urgency:submissions.urgency, assignedToId:submissions.assignedToId, serviceLabel:services.labelEs })
       .from(submissions)
       .innerJoin(services, eq(submissions.serviceId, services.id))
       .where(eq(submissions.clientId, client.id))
@@ -52,7 +46,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await auth()
   const myId = (session?.user as any)?.id
-  if (!session || !["admin","vendor"].includes((session.user as any).role))
+  if (!session || !["admin","vendor","ops"].includes((session.user as any).role))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const body = await req.json()
