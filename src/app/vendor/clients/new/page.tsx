@@ -159,8 +159,8 @@ export default function NewClientPage() {
               <select value={form.dunsStatus} onChange={e => set("dunsStatus", e.target.value)} style={inp}>
                 <option value="">Seleccioná...</option>
                 <option value="has">Tiene DUNS</option>
-                <option value="requested">Lo está tramitando</option>
-                <option value="needed">Necesita tramitarlo</option>
+                <option value="pending">Lo está tramitando</option>
+                <option value="waiting">Necesita tramitarlo</option>
                 <option value="exempt">Exento</option>
               </select>
             </div>
