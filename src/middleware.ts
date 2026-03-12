@@ -5,9 +5,6 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
-    cookieName: process.env.NODE_ENV === "production"
-      ? "__Secure-authjs.session-token"
-      : "authjs.session-token",
   })
 
   const { pathname } = req.nextUrl
@@ -22,10 +19,8 @@ export async function middleware(req: NextRequest) {
   const role          = (token as any).role
   const needsPwChange = (token as any).needsPwChange
 
-  // Solo redirige a change-password si ya está autenticado y no está en login
-  if (needsPwChange && pathname !== "/login" && pathname !== "/change-password") {
+  if (needsPwChange && pathname !== "/login" && pathname !== "/change-password")
     return NextResponse.redirect(new URL("/change-password", req.url))
-  }
 
   if (pathname === "/login") {
     if (needsPwChange) return NextResponse.redirect(new URL("/change-password", req.url))

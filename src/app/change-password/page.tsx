@@ -77,3 +77,4 @@ export default function ChangePasswordPage() {
     </div>
   )
 }
+// ya existe, solo agregamos el email visible - reemplazar el archivo completo no es necesario
