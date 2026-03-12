@@ -2,45 +2,42 @@ import { NextRequest, NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 
 export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET })
-  const role = (token as any)?.role
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+    cookieName: process.env.NODE_ENV === "production"
+      ? "__Secure-authjs.session-token"
+      : "authjs.session-token",
+  })
 
-  if (pathname === "/login") {
-    if (token) return NextResponse.redirect(new URL(dashboardFor(role), req.url))
-    return NextResponse.next()
-  }
+  const { pathname } = req.nextUrl
 
   if (!token) {
+    if (pathname === "/login") return NextResponse.next()
     return NextResponse.redirect(new URL("/login", req.url))
   }
 
-  if (pathname.startsWith("/admin") && role !== "admin") {
-    return NextResponse.redirect(new URL(dashboardFor(role), req.url))
+  const role = (token as any).role
+
+  if (pathname === "/login") {
+    if (role === "admin")  return NextResponse.redirect(new URL("/admin/dashboard", req.url))
+    if (role === "vendor") return NextResponse.redirect(new URL("/vendor/dashboard", req.url))
+    if (role === "ops")    return NextResponse.redirect(new URL("/ops/queue", req.url))
+    if (role === "client") return NextResponse.redirect(new URL("/portal", req.url))
   }
-  if (pathname.startsWith("/vendor") && !["admin", "vendor"].includes(role)) {
-    return NextResponse.redirect(new URL(dashboardFor(role), req.url))
-  }
-  if (pathname.startsWith("/ops") && !["admin", "ops"].includes(role)) {
-    return NextResponse.redirect(new URL(dashboardFor(role), req.url))
-  }
-  if (pathname.startsWith("/portal") && role !== "client") {
-    return NextResponse.redirect(new URL(dashboardFor(role), req.url))
-  }
+
+  if (pathname.startsWith("/admin") && role !== "admin")
+    return NextResponse.redirect(new URL("/login", req.url))
+  if (pathname.startsWith("/vendor") && !["admin","vendor"].includes(role))
+    return NextResponse.redirect(new URL("/login", req.url))
+  if (pathname.startsWith("/ops") && !["admin","ops"].includes(role))
+    return NextResponse.redirect(new URL("/login", req.url))
+  if (pathname.startsWith("/portal") && role !== "client")
+    return NextResponse.redirect(new URL("/login", req.url))
 
   return NextResponse.next()
 }
 
-function dashboardFor(role?: string) {
-  switch (role) {
-    case "admin":  return "/admin/dashboard"
-    case "vendor": return "/vendor/dashboard"
-    case "ops":    return "/ops/queue"
-    case "client": return "/portal"
-    default:       return "/login"
-  }
-}
-
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/", "/login", "/admin/:path*", "/vendor/:path*", "/ops/:path*", "/portal/:path*"],
 }
