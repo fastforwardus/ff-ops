@@ -12,7 +12,6 @@ export async function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl
 
-  // Rutas públicas
   if (pathname.startsWith("/api/auth") || pathname === "/change-password") return NextResponse.next()
 
   if (!token) {
@@ -20,15 +19,16 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url))
   }
 
-  const role      = (token as any).role
+  const role          = (token as any).role
   const needsPwChange = (token as any).needsPwChange
 
-  // Si tiene contraseña temporal → forzar cambio
-  if (needsPwChange && pathname !== "/change-password") {
+  // Solo redirige a change-password si ya está autenticado y no está en login
+  if (needsPwChange && pathname !== "/login" && pathname !== "/change-password") {
     return NextResponse.redirect(new URL("/change-password", req.url))
   }
 
   if (pathname === "/login") {
+    if (needsPwChange) return NextResponse.redirect(new URL("/change-password", req.url))
     if (role === "admin")  return NextResponse.redirect(new URL("/admin/dashboard", req.url))
     if (role === "vendor") return NextResponse.redirect(new URL("/vendor/dashboard", req.url))
     if (role === "ops")    return NextResponse.redirect(new URL("/ops/queue", req.url))
