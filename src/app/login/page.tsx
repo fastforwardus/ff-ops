@@ -1,24 +1,39 @@
 "use client"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [email,    setEmail]    = useState("")
   const [password, setPassword] = useState("")
   const [error,    setError]    = useState("")
   const [loading,  setLoading]  = useState(false)
+  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError("")
-    await signIn("credentials", {
-      email,
-      password,
-      redirect: true,
-      callbackUrl: "/",
-    })
-    setLoading(false)
+
+    const res = await signIn("credentials", { email, password, redirect: false })
+
+    if (!res || res.error) {
+      setError("Email o contraseña incorrectos.")
+      setLoading(false)
+      return
+    }
+
+    // Leer sesión para saber a dónde ir
+    const session = await fetch("/api/auth/session").then(r => r.json())
+    const role          = session?.user?.role
+    const needsPwChange = session?.user?.needsPwChange
+
+    if (needsPwChange) { router.push("/change-password"); return }
+    if (role === "admin")  { router.push("/admin/dashboard"); return }
+    if (role === "vendor") { router.push("/vendor/dashboard"); return }
+    if (role === "ops")    { router.push("/ops/queue"); return }
+    if (role === "client") { router.push("/portal"); return }
+    router.push("/")
   }
 
   return (
@@ -47,16 +62,16 @@ export default function LoginPage() {
       `}</style>
       <div className="wrap">
         <div className="left">
-          <div style={{ fontSize: 18, fontWeight: 600, color: "#fff", letterSpacing: "-0.03em" }}>FastForward <span style={{ color: "#555", fontWeight: 300 }}>Ops</span></div>
+          <div style={{ fontSize:18, fontWeight:600, color:"#fff", letterSpacing:"-0.03em" }}>FastForward <span style={{ color:"#555", fontWeight:300 }}>Ops</span></div>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 300, color: "#fff", lineHeight: 1.3, marginBottom: 16, letterSpacing: "-0.04em" }}>
-              FDA submissions,<br /><span style={{ color: "#555" }}>under control.</span>
+            <div style={{ fontSize:28, fontWeight:300, color:"#fff", lineHeight:1.3, marginBottom:16, letterSpacing:"-0.04em" }}>
+              FDA submissions,<br /><span style={{ color:"#555" }}>under control.</span>
             </div>
-            <div style={{ color: "#444", fontSize: 13, lineHeight: 1.6, maxWidth: 280 }}>
-              Internal platform for managing <strong style={{ color: "#888", fontWeight: 400 }}>FDA registrations</strong>, client portals, and operations workflows.
+            <div style={{ color:"#444", fontSize:13, lineHeight:1.6, maxWidth:280 }}>
+              Internal platform for managing <strong style={{ color:"#888", fontWeight:400 }}>FDA registrations</strong>, client portals, and operations workflows.
             </div>
           </div>
-          <div style={{ fontSize: 11, color: "#333" }}>FastForward LLC · Miami, FL</div>
+          <div style={{ fontSize:11, color:"#333" }}>FastForward LLC · Miami, FL</div>
         </div>
         <div className="right">
           <div className="form-box">
@@ -67,7 +82,7 @@ export default function LoginPage() {
                 <label>Email</label>
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="vos@fastfwdus.com" required autoFocus />
               </div>
-              <div className="field" style={{ marginBottom: 24 }}>
+              <div className="field" style={{ marginBottom:24 }}>
                 <label>Contraseña</label>
                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
               </div>
