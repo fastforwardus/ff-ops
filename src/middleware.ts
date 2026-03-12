@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 
 export async function middleware(req: NextRequest) {
+  const isProduction = process.env.NODE_ENV === "production"
+
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
+    cookieName: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
   })
 
   const { pathname } = req.nextUrl
@@ -23,7 +26,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/change-password", req.url))
 
   if (pathname === "/login") {
-    if (needsPwChange) return NextResponse.redirect(new URL("/change-password", req.url))
+    if (needsPwChange)     return NextResponse.redirect(new URL("/change-password", req.url))
     if (role === "admin")  return NextResponse.redirect(new URL("/admin/dashboard", req.url))
     if (role === "vendor") return NextResponse.redirect(new URL("/vendor/dashboard", req.url))
     if (role === "ops")    return NextResponse.redirect(new URL("/ops/queue", req.url))
